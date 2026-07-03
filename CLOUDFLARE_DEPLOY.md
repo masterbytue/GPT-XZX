@@ -2,6 +2,12 @@
 
 这套迁移方案把前端放到 Cloudflare Pages，把后端 API 放到 Cloudflare Workers，把原来的本地 SQLite 换成 Cloudflare D1。
 
+## 当前线上地址
+
+- 前端 Pages: https://gpt-xzx.pages.dev
+- Worker API: https://chat-app-api.xia13793816032.workers.dev
+- D1 数据库: `chat_app`
+
 ## 1. 创建 D1 数据库
 
 ```bash

@@ -3,11 +3,11 @@ main = "src/index.js"
 compatibility_date = "2026-07-03"
 
 [vars]
-RELAY_BASE_URL = "https://jingyuqingfeng.cn/v1"
+RELAY_BASE_URL = "https://aizhuan.fun/v1"
 DEFAULT_MODEL = "gpt-5.4-mini"
 CORS_ORIGIN = "*"
 
 [[d1_databases]]
 binding = "DB"
 database_name = "chat_app"
-database_id = "REPLACE_WITH_D1_DATABASE_ID"
+database_id = "b619c2df-6ad2-497e-9743-733ed7121471"
