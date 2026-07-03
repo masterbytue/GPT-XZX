@@ -1,0 +1,13 @@
+name = "chat-app-api"
+main = "src/index.js"
+compatibility_date = "2026-07-03"
+
+[vars]
+RELAY_BASE_URL = "https://jingyuqingfeng.cn/v1"
+DEFAULT_MODEL = "gpt-5.4-mini"
+CORS_ORIGIN = "*"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "chat_app"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"

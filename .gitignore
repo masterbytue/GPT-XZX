@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-worker/
+.wrangler/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+!.env.production.example
+
+# Local databases and runtime data
+data/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.db
+
+# Logs and local OS/editor files
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
