@@ -1,5 +1,5 @@
 // Thin fetch wrapper. In dev, calls go to /api and Vite proxies them to the local backend.
-// In production, set VITE_API_BASE to the Worker origin, for example https://chat-app-api.example.workers.dev.
+// In production, set VITE_API_BASE to the 砺文智联 Worker origin.
 import { useAuthStore } from './stores/auth';
 
 const API_BASE = (import.meta.env.VITE_API_BASE || '').replace(/\/$/, '');

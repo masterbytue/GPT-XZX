@@ -1,17 +1,17 @@
 <template>
   <main class="login-wrap">
     <section class="login-panel" aria-label="产品介绍">
-      <div class="login-brand"><span class="brand-mark"><AppIcon name="spark" /></span><span>GPT-XZX</span></div>
+      <div class="login-brand"><span class="brand-mark"><AppIcon name="spark" /></span><span>砺文智联</span></div>
       <div class="login-statement">
         <p>Think clearly · Create freely</p>
         <h2>让每一个问题，<br />都有清晰的下一步。</h2>
       </div>
-      <div class="login-credit">A focused AI workspace by Xia Zhenxiang.</div>
+      <div class="login-credit">砺思于文 · 智联万象</div>
     </section>
 
     <section class="login-form-side">
       <div class="login-card">
-        <div class="mobile-brand"><span class="brand-mark"><AppIcon name="spark" /></span><span>GPT-XZX</span></div>
+        <div class="mobile-brand"><span class="brand-mark"><AppIcon name="spark" /></span><span>砺文智联</span></div>
         <h1>{{ mode === 'login' ? '欢迎回来' : '创建你的账号' }}</h1>
         <p class="sub">{{ mode === 'login' ? '登录后继续你的思考与创作。' : '几秒钟即可开启新的智能工作区。' }}</p>
         <form @submit.prevent="submit">

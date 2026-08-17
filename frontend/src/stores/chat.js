@@ -10,7 +10,7 @@ export const useChatStore = defineStore('chat', {
     messages: [],
     streaming: false,
     error: '',
-    selectedModel: localStorage.getItem('selectedModel') || 'gpt-5.4-mini',
+    selectedModel: 'gpt-5.6-sol',
   }),
   actions: {
     async loadConversations() {

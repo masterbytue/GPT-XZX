@@ -4,8 +4,8 @@
 
     <aside class="sidebar" :class="{ open: sidebarOpen }">
       <div class="sidebar-topbar">
-        <button class="brand-button" type="button" aria-label="GPT-XZX 首页" @click="startNew">
-          <span class="brand-mark"><AppIcon name="spark" /></span><span>GPT-XZX</span>
+        <button class="brand-button" type="button" aria-label="砺文智联首页" @click="startNew">
+          <span class="brand-mark"><AppIcon name="spark" /></span><span>砺文智联</span>
         </button>
         <button class="icon-button sidebar-toggle" type="button" title="收起侧边栏" @click="sidebarOpen = false"><AppIcon name="panel" /></button>
       </div>
@@ -57,7 +57,7 @@
     <main class="chat-main" @dragenter.prevent="dragActive = true" @dragover.prevent="dragActive = true" @dragleave.self="dragActive = false" @drop.prevent="handleDrop">
       <header class="chat-header">
         <button v-if="!sidebarOpen" class="icon-button" type="button" title="打开侧边栏" @click="sidebarOpen = true"><AppIcon name="panel" /></button>
-        <button class="model-button" type="button" aria-label="当前模型"><span>GPT-XZX</span><span class="model-badge">5.4 mini</span><AppIcon name="chevron-down" /></button>
+        <button class="model-button" type="button" aria-label="当前模型：5.6 Sol，Pro 档位"><span>砺文智联</span><span class="model-badge">5.6 Sol</span><span class="tier-badge">Pro</span><AppIcon name="chevron-down" /></button>
         <div class="header-spacer"></div>
         <button class="new-chat-mobile" type="button" title="新建对话" @click="startNew"><AppIcon name="compose" /></button>
       </header>
@@ -125,7 +125,7 @@
             v-model="draft"
             rows="1"
             aria-label="消息输入框"
-            placeholder="给 GPT-XZX 发消息"
+            placeholder="给砺文智联发消息"
             @focus="composerFocused = true"
             @blur="composerFocused = false"
             @input="autogrow"
@@ -137,7 +137,7 @@
             <button v-else class="send-button" type="button" :disabled="!canSend" title="发送消息" @click="submit"><AppIcon name="arrow-up" /></button>
           </div>
         </div>
-        <p class="composer-note">GPT-XZX 可能会犯错，请核查重要信息。Enter 发送，Shift + Enter 换行。</p>
+        <p class="composer-note">砺文智联可能会犯错，请核查重要信息。Enter 发送，Shift + Enter 换行。</p>
       </footer>
     </main>
   </div>
