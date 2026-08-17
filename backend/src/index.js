@@ -18,7 +18,7 @@ app.use(express.json({ limit: '2mb' }));
 
 const RELAY_BASE_URL = process.env.RELAY_BASE_URL || 'https://jingyuqingfeng.cn/v1';
 const RELAY_API_KEY = process.env.RELAY_API_KEY;
-const DEFAULT_MODEL = process.env.DEFAULT_MODEL || 'gpt-5.4-mini';
+const DEFAULT_MODEL = process.env.DEFAULT_MODEL || 'gpt-5.6-sol';
 const PORT = process.env.PORT || 8787;
 
 if (!RELAY_API_KEY) {
@@ -100,7 +100,7 @@ app.get('/api/conversations', authRequired, (req, res) => {
 });
 
 app.post('/api/conversations', authRequired, (req, res) => {
-  const title = (req.body && req.body.title) || 'New chat';
+  const title = (req.body && req.body.title) || '新对话';
   const info = db.prepare('INSERT INTO conversations (user_id, title) VALUES (?, ?)').run(req.user.id, title);
   const row = db.prepare('SELECT id, title, created_at, updated_at FROM conversations WHERE id = ?').get(info.lastInsertRowid);
   res.json(row);
@@ -118,7 +118,7 @@ app.get('/api/conversations/:id/messages', authRequired, (req, res) => {
 app.patch('/api/conversations/:id', authRequired, (req, res) => {
   const conv = db.prepare('SELECT id FROM conversations WHERE id = ? AND user_id = ?').get(req.params.id, req.user.id);
   if (!conv) return res.status(404).json({ error: 'conversation not found' });
-  const title = (req.body && req.body.title) || 'New chat';
+  const title = (req.body && req.body.title) || '新对话';
   db.prepare('UPDATE conversations SET title = ?, updated_at = datetime(\'now\') WHERE id = ?').run(title, req.params.id);
   res.json({ ok: true });
 });
@@ -147,8 +147,8 @@ app.post('/api/chat', authRequired, async (req, res) => {
 
   // Auto-title from the first user message.
   const msgCount = db.prepare('SELECT COUNT(*) AS c FROM messages WHERE conversation_id = ?').get(conversationId).c;
-  if (msgCount === 1 && (conv.title === 'New chat' || !conv.title)) {
-    const title = content.slice(0, 40).replace(/\s+/g, ' ').trim() || 'New chat';
+  if (msgCount === 1 && (conv.title === '新对话' || !conv.title)) {
+    const title = content.slice(0, 40).replace(/\s+/g, ' ').trim() || '新对话';
     db.prepare('UPDATE conversations SET title = ? WHERE id = ?').run(title, conversationId);
   }
 
@@ -160,7 +160,7 @@ app.post('/api/chat', authRequired, async (req, res) => {
   // Add system prompt to inform AI about its model version.
   const systemPrompt = {
     role: 'system',
-    content: `你是一个智能助手。当用户询问你的身份或版本时，请如实回答：你是 ${model || DEFAULT_MODEL} 模型。`,
+    content: `你是砺文智联的智能助手，当前使用 ${model || DEFAULT_MODEL} 模型，服务档位为 Pro。回答应清晰、可靠、自然。`,
   };
   const messagesWithSystem = [systemPrompt, ...history.map((m) => ({ role: m.role, content: m.content }))];
 
@@ -172,6 +172,10 @@ app.post('/api/chat', authRequired, async (req, res) => {
   res.flushHeaders?.();
 
   const send = (obj) => res.write(`data: ${JSON.stringify(obj)}\n\n`);
+  const upstreamController = new AbortController();
+  res.once('close', () => {
+    if (!res.writableEnded) upstreamController.abort();
+  });
 
   let full = '';
   try {
@@ -186,6 +190,7 @@ app.post('/api/chat', authRequired, async (req, res) => {
         stream: true,
         messages: messagesWithSystem,
       }),
+      signal: upstreamController.signal,
     });
 
     if (!upstream.ok || !upstream.body) {
@@ -212,6 +217,11 @@ app.post('/api/chat', authRequired, async (req, res) => {
         if (data === '[DONE]') continue;
         try {
           const json = JSON.parse(data);
+          if (json.error) {
+            const upstreamMessage = typeof json.error === 'string' ? json.error : json.error.message;
+            send({ type: 'error', error: upstreamMessage || '上游模型服务返回错误' });
+            return res.end();
+          }
           const delta = json.choices?.[0]?.delta?.content;
           if (delta) {
             full += delta;
@@ -223,6 +233,11 @@ app.post('/api/chat', authRequired, async (req, res) => {
       }
     }
 
+    if (!full.trim()) {
+      send({ type: 'error', error: '上游模型服务未返回内容，请稍后重试' });
+      return res.end();
+    }
+
     // Persist the assistant's full reply.
     const info = db.prepare('INSERT INTO messages (conversation_id, role, content) VALUES (?, ?, ?)')
       .run(conversationId, 'assistant', full);
@@ -231,18 +246,20 @@ app.post('/api/chat', authRequired, async (req, res) => {
     send({ type: 'done', messageId: info.lastInsertRowid });
     res.end();
   } catch (err) {
-    console.error('chat error', err);
+    if (err.name !== 'AbortError') console.error('chat error', err);
     // Save whatever we streamed so it isn't lost.
     if (full) {
       db.prepare('INSERT INTO messages (conversation_id, role, content) VALUES (?, ?, ?)')
         .run(conversationId, 'assistant', full);
     }
-    send({ type: 'error', error: err.message || 'stream failed' });
-    res.end();
+    if (!res.destroyed) {
+      send({ type: 'error', error: err.message || 'stream failed' });
+      res.end();
+    }
   }
 });
 
-app.get('/api/health', (_req, res) => res.json({ ok: true, model: DEFAULT_MODEL }));
+app.get('/api/health', (_req, res) => res.json({ ok: true, model: DEFAULT_MODEL, tier: 'Pro', brand: '砺文智联' }));
 
 app.listen(PORT, () => {
   console.log(`Backend listening on http://localhost:${PORT}`);

@@ -1,6 +1,6 @@
-# Chat 应用 —— 交接说明（给 Trae）
+# 砺文智联 —— 本地运行交接说明
 
-这是一个已经写好并验证过的 ChatGPT 风格聊天应用。请帮我在本机（**Windows 11，已装 Node.js v24**）把它跑起来。项目已在 `Downloads\chat-app` 目录下，**代码不需要重写**，主要是安装依赖 + 启动 + 排错。
+这是砺文智联智能对话工作台的本地运行说明。适用环境为 **Windows 11 + Node.js v24**，主要包含依赖安装、服务启动和常见问题排查。
 
 ---
 
@@ -9,12 +9,12 @@
 - **前端**：Vue 3 + Vite + Pinia + Vue Router，支持 Markdown 渲染、代码高亮、逐字流式输出。
 - **后端**：Node + Express，做 BFF（backend for frontend）。负责 JWT 登录鉴权、会话/消息存储、把流式请求代理到大模型中转站（API Key 只留在后端，不进浏览器）。
 - **数据库**：使用 **Node 24 内置的 SQLite**（`node:sqlite`），**不需要** `better-sqlite3`，因此**不需要 Visual Studio / node-gyp / C++ 编译工具**。
-- **大模型**：接的是一个 OpenAI 兼容中转站，走 `/v1/chat/completions` 接口，默认模型 `gpt-5.4-mini`。
+- **大模型**：通过 OpenAI 兼容的 `/v1/chat/completions` 接口调用，默认模型 `gpt-5.6-sol`，服务档位为 `Pro`。
 
 目录结构：
 
 ```
-chat-app/
+liwen-zhilian/
 ├── backend/
 │   ├── .env              # 已配好中转站地址和 key，开箱即用
 │   ├── .env.example
@@ -56,7 +56,7 @@ chat-app/
 ### 终端 1 —— 后端
 
 ```
-cd %USERPROFILE%\Downloads\chat-app\backend
+cd %USERPROFILE%\Downloads\liwen-zhilian\backend
 npm install
 npm run dev
 ```
@@ -65,13 +65,13 @@ npm run dev
 
 ```
 Backend listening on http://localhost:8787
-Relay: https://jingyuqingfeng.cn/v1  Model: gpt-5.4-mini
+Relay: https://aizhuan.fun/v1  Model: gpt-5.6-sol
 ```
 
 ### 终端 2 —— 前端（新开一个窗口）
 
 ```
-cd %USERPROFILE%\Downloads\chat-app\frontend
+cd %USERPROFILE%\Downloads\liwen-zhilian\frontend
 npm install
 npm run dev
 ```
@@ -93,7 +93,7 @@ Local:   http://localhost:5173/
 3. 发一条消息，AI 回复应该是**逐字流式**出现的。
 4. 左侧会出现会话，标题自动取自第一条消息；刷新页面后历史还在。
 
-后端也可以单独用命令验证健康状态：浏览器访问 `http://localhost:8787/api/health`，应返回 `{"ok":true,"model":"gpt-5.4-mini"}`。
+后端也可以单独用命令验证健康状态：浏览器访问 `http://localhost:8787/api/health`，应返回包含 `{"ok":true,"model":"gpt-5.6-sol","tier":"Pro","brand":"砺文智联"}` 的状态信息。
 
 ---
 

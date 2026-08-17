@@ -30,7 +30,7 @@ export default {
       }
       if (request.method === 'POST' && pathname === '/api/chat') return withAuth(request, env, streamChat, ctx);
       if (request.method === 'GET' && pathname === '/api/health') {
-        return json({ ok: true, model: env.DEFAULT_MODEL || 'gpt-5.4-mini' }, env);
+        return json({ ok: true, model: env.DEFAULT_MODEL || 'gpt-5.6-sol', tier: 'Pro', brand: '砺文智联' }, env);
       }
 
       return json({ error: 'not found' }, env, 404);
@@ -101,7 +101,7 @@ async function listConversations(_request, env, user) {
 
 async function createConversation(request, env, user) {
   const body = await readJson(request).catch(() => ({}));
-  const title = body.title || 'New chat';
+  const title = body.title || '新对话';
   const result = await env.DB.prepare('INSERT INTO conversations (user_id, title) VALUES (?, ?)')
     .bind(user.id, title)
     .run();
@@ -128,7 +128,7 @@ async function updateConversation(request, env, user) {
   if (!conv) return json({ error: 'conversation not found' }, env, 404);
 
   const body = await readJson(request).catch(() => ({}));
-  const title = body.title || 'New chat';
+  const title = body.title || '新对话';
   await env.DB.prepare("UPDATE conversations SET title = ?, updated_at = datetime('now') WHERE id = ? AND user_id = ?")
     .bind(title, id, user.id)
     .run();
@@ -161,8 +161,8 @@ async function streamChat(request, env, user, ctx) {
   const countRow = await env.DB.prepare('SELECT COUNT(*) AS c FROM messages WHERE conversation_id = ?')
     .bind(conversationId)
     .first();
-  if (countRow.c === 1 && (conv.title === 'New chat' || !conv.title)) {
-    const title = content.slice(0, 40).replace(/\s+/g, ' ').trim() || 'New chat';
+  if (countRow.c === 1 && (conv.title === '新对话' || !conv.title)) {
+    const title = content.slice(0, 40).replace(/\s+/g, ' ').trim() || '新对话';
     await env.DB.prepare("UPDATE conversations SET title = ?, updated_at = datetime('now') WHERE id = ?")
       .bind(title, conversationId)
       .run();
@@ -172,10 +172,10 @@ async function streamChat(request, env, user, ctx) {
     'SELECT role, content FROM messages WHERE conversation_id = ? ORDER BY id ASC'
   ).bind(conversationId).all();
 
-  const activeModel = model || env.DEFAULT_MODEL || 'gpt-5.4-mini';
+  const activeModel = model || env.DEFAULT_MODEL || 'gpt-5.6-sol';
   const systemPrompt = {
     role: 'system',
-    content: `你是一个智能助手。当用户询问你的身份或版本时，请如实回答：你是 ${activeModel} 模型。`,
+    content: `你是砺文智联的智能助手，当前使用 ${activeModel} 模型，服务档位为 Pro。回答应清晰、可靠、自然。`,
   };
   const messages = [
     systemPrompt,
@@ -194,9 +194,12 @@ async function streamChat(request, env, user, ctx) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Accept: 'text/event-stream',
+          'User-Agent': 'OpenAI/NodeJS',
           Authorization: `Bearer ${env.RELAY_API_KEY}`,
         },
         body: JSON.stringify({ model: activeModel, stream: true, messages }),
+        signal: request.signal,
       });
 
       if (!upstream.ok || !upstream.body) {
@@ -221,6 +224,11 @@ async function streamChat(request, env, user, ctx) {
           if (!data || data === '[DONE]') continue;
           try {
             const evt = JSON.parse(data);
+            if (evt.error) {
+              const upstreamMessage = typeof evt.error === 'string' ? evt.error : evt.error.message;
+              await send({ type: 'error', error: upstreamMessage || '上游模型服务返回错误' });
+              return;
+            }
             const delta = evt.choices?.[0]?.delta?.content;
             if (delta) {
               full += delta;
@@ -230,6 +238,11 @@ async function streamChat(request, env, user, ctx) {
             // Ignore upstream keep-alives and partial chunks.
           }
         }
+      }
+
+      if (!full.trim()) {
+        await send({ type: 'error', error: '上游模型服务未返回内容，请稍后重试' });
+        return;
       }
 
       const result = await env.DB.prepare('INSERT INTO messages (conversation_id, role, content) VALUES (?, ?, ?)')
@@ -245,9 +258,11 @@ async function streamChat(request, env, user, ctx) {
           .bind(conversationId, 'assistant', full)
           .run();
       }
-      await send({ type: 'error', error: err.message || 'stream failed' });
+      if (err.name !== 'AbortError') {
+        await send({ type: 'error', error: err.message || 'stream failed' }).catch(() => {});
+      }
     } finally {
-      await writer.close();
+      await writer.close().catch(() => {});
     }
   })());
 

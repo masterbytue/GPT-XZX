@@ -1,8 +1,8 @@
 {
-  "name": "chat-app-backend",
+  "name": "liwen-zhilian-backend",
   "version": "1.0.0",
   "type": "module",
-  "description": "BFF backend for the Vue chat app: JWT auth, conversation storage, SSE streaming proxy to an OpenAI-compatible relay. Uses Node's built-in SQLite (no native build tools required).",
+  "description": "砺文智联本地服务：JWT 登录、对话存储与兼容 OpenAI 的流式模型转发。",
   "main": "src/index.js",
   "scripts": {
     "start": "node --experimental-sqlite --no-warnings src/index.js",

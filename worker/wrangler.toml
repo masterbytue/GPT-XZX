@@ -1,13 +1,13 @@
-name = "chat-app-api"
+name = "liwen-zhilian-api"
 main = "src/index.js"
-compatibility_date = "2026-07-03"
+compatibility_date = "2026-08-17"
 
 [vars]
 RELAY_BASE_URL = "https://aizhuan.fun/v1"
-DEFAULT_MODEL = "gpt-5.4-mini"
+DEFAULT_MODEL = "gpt-5.6-sol"
 CORS_ORIGIN = "*"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "chat_app"
-database_id = "b619c2df-6ad2-497e-9743-733ed7121471"
+database_name = "liwen_zhilian"
+database_id = "20e99a7e-9820-4d12-9442-a4d69619a572"

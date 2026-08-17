@@ -4,9 +4,9 @@
 
 ## 当前线上地址
 
-- 前端 Pages: https://gpt-xzx.pages.dev
-- Worker API: https://chat-app-api.xia13793816032.workers.dev
-- D1 数据库: `chat_app`
+- 前端 Pages: https://liwen-zhilian.pages.dev
+- Worker API: https://liwen-zhilian-api.946883902.workers.dev
+- D1 数据库: `liwen_zhilian`
 
 ## 1. 创建 D1 数据库
 
@@ -14,7 +14,7 @@
 cd worker
 npm install
 npx wrangler login
-npx wrangler d1 create chat_app
+npx wrangler d1 create liwen_zhilian
 ```
 
 把命令输出里的 `database_id` 填到 `worker/wrangler.toml`：
@@ -22,7 +22,7 @@ npx wrangler d1 create chat_app
 ```toml
 [[d1_databases]]
 binding = "DB"
-database_name = "chat_app"
+database_name = "liwen_zhilian"
 database_id = "你的 database_id"
 ```
 
@@ -35,6 +35,8 @@ npx wrangler secret put RELAY_API_KEY
 ```
 
 `JWT_SECRET` 用一串足够长的随机字符串。`RELAY_API_KEY` 用你现在后端 `.env` 里的模型中转 API Key。
+
+当前模型中转地址为 `https://aizhuan.fun/v1`，密钥仅保存在 Cloudflare Secret 中，不写入仓库。
 
 ## 3. 初始化 D1 表结构
 
@@ -60,10 +62,10 @@ npm run deploy
 部署后会得到类似：
 
 ```text
-https://chat-app-api.YOUR_SUBDOMAIN.workers.dev
+https://liwen-zhilian-api.YOUR_SUBDOMAIN.workers.dev
 ```
 
-## 5. 配置前端 API 地址
+## 5. 配置前端同源 API
 
 复制示例文件：
 
@@ -72,10 +74,10 @@ cd frontend
 copy .env.production.example .env.production
 ```
 
-把里面的地址改成你的 Worker 地址：
+生产环境保持 API 地址为空，浏览器会请求 Pages 同源的 `/api/*`。Pages Function 通过 Service Binding 调用 Worker，不会让用户浏览器直接访问 `workers.dev`：
 
 ```env
-VITE_API_BASE=https://chat-app-api.YOUR_SUBDOMAIN.workers.dev
+VITE_API_BASE=
 ```
 
 然后构建：
@@ -85,7 +87,7 @@ npm install
 npm run build
 ```
 
-把 `frontend/dist` 部署到 Cloudflare Pages。
+在 `frontend` 目录运行 `wrangler pages deploy`。`frontend/wrangler.jsonc` 会把 `API` Service Binding 指向 `liwen-zhilian-api`，并连同 `functions/api/[[path]].js` 一起部署。
 
 ## 注意事项
 
