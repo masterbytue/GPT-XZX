@@ -63,6 +63,15 @@ export const useChatStore = defineStore('chat', {
       this.streaming = true;
       const requestController = new AbortController();
       activeRequest = requestController;
+      let pendingText = '';
+      let frameId = null;
+      const flushPendingText = () => {
+        if (pendingText) {
+          assistant.content += pendingText;
+          pendingText = '';
+        }
+        frameId = null;
+      };
       try {
         await streamChat({
           conversationId: this.activeId,
@@ -70,11 +79,16 @@ export const useChatStore = defineStore('chat', {
           model: this.selectedModel,
           signal: requestController.signal,
         }, (delta) => {
-          assistant.content += delta;
+          pendingText += delta;
+          if (frameId === null) frameId = window.requestAnimationFrame(flushPendingText);
         });
+        if (frameId !== null) window.cancelAnimationFrame(frameId);
+        flushPendingText();
         // Refresh conversation list so the auto-generated title shows up.
         await this.loadConversations();
       } catch (e) {
+        if (frameId !== null) window.cancelAnimationFrame(frameId);
+        flushPendingText();
         if (e.name === 'AbortError') {
           if (!assistant.content) assistant.content = '_已停止生成_';
         } else {
@@ -82,8 +96,10 @@ export const useChatStore = defineStore('chat', {
           assistant.content += `\n\n_[error: ${this.error}]_`;
         }
       } finally {
-        if (activeRequest === requestController) activeRequest = null;
-        this.streaming = false;
+        if (activeRequest === requestController) {
+          activeRequest = null;
+          this.streaming = false;
+        }
       }
     },
   },

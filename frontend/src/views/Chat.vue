@@ -79,19 +79,28 @@
         </section>
 
         <section v-else class="message-list" aria-live="polite">
-          <article v-for="(message, index) in chat.messages" :key="message.id" class="message" :class="message.role">
+          <article
+            v-for="(message, index) in chat.messages"
+            :key="message.id"
+            class="message"
+            :class="[message.role, { 'streaming-message': chat.streaming && message.role === 'assistant' && index === chat.messages.length - 1 }]"
+          >
             <div class="message-inner">
               <div v-if="message.role === 'assistant'" class="assistant-mark"><AppIcon name="spark" /></div>
-              <div class="message-content" :class="{ cursor: chat.streaming && message.role === 'assistant' && index === chat.messages.length - 1 }">
-                <div v-if="isThinking(message, index)" class="thinking" aria-label="正在生成回答"><span></span><span></span><span></span></div>
-                <template v-else>
-                  <div class="markdown-body" v-html="render(message.content)"></div>
-                  <div v-if="message.role === 'assistant' && message.content" class="message-actions">
-                    <button type="button" :title="copiedMessageId === message.id ? '已复制' : '复制回答'" @click="copyAssistantMessage(message)">
+              <div class="message-stack" :class="message.role">
+                <div
+                  class="message-content"
+                  :class="{ cursor: chat.streaming && message.role === 'assistant' && index === chat.messages.length - 1 }"
+                  :aria-busy="chat.streaming && message.role === 'assistant' && index === chat.messages.length - 1"
+                >
+                  <div v-if="isThinking(message, index)" class="thinking" aria-label="正在生成回答"><span></span><span></span><span></span></div>
+                  <div v-else class="markdown-body" v-html="render(message.content)"></div>
+                </div>
+                <div v-if="message.content" class="message-actions" :class="message.role">
+                  <button type="button" :title="copiedMessageId === message.id ? '已复制' : '复制消息'" @click="copyMessage(message)">
                       <AppIcon :name="copiedMessageId === message.id ? 'check' : 'copy'" /><span>{{ copiedMessageId === message.id ? '已复制' : '复制' }}</span>
-                    </button>
-                  </div>
-                </template>
+                  </button>
+                </div>
               </div>
             </div>
           </article>
@@ -258,7 +267,7 @@ async function copyText(text) {
     return copied;
   }
 }
-async function copyAssistantMessage(message) {
+async function copyMessage(message) {
   if (!message.content || !(await copyText(message.content))) return;
   copiedMessageId.value = message.id;
   window.clearTimeout(copyTimer);
