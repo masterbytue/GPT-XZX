@@ -3,7 +3,7 @@ main = "src/index.js"
 compatibility_date = "2026-08-17"
 
 [vars]
-RELAY_BASE_URL = "https://ai.suv.run/v1"
+RELAY_BASE_URL = "https://aizhuan.fun/v1"
 DEFAULT_MODEL = "gpt-5.6-sol"
 CORS_ORIGIN = "*"
 

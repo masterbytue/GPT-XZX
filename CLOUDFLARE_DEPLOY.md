@@ -36,7 +36,7 @@ npx wrangler secret put RELAY_API_KEY
 
 `JWT_SECRET` 用一串足够长的随机字符串。`RELAY_API_KEY` 用你现在后端 `.env` 里的模型中转 API Key。
 
-当前模型中转地址为 `https://ai.suv.run/v1`，密钥仅保存在 Cloudflare Secret 中，不写入仓库。
+当前模型中转地址为 `https://aizhuan.fun/v1`，密钥仅保存在 Cloudflare Secret 中，不写入仓库。
 
 ## 3. 初始化 D1 表结构
 
