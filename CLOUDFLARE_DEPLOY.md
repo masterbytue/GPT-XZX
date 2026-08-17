@@ -65,7 +65,7 @@ npm run deploy
 https://liwen-zhilian-api.YOUR_SUBDOMAIN.workers.dev
 ```
 
-## 5. 配置前端 API 地址
+## 5. 配置前端同源 API
 
 复制示例文件：
 
@@ -74,10 +74,10 @@ cd frontend
 copy .env.production.example .env.production
 ```
 
-把里面的地址改成你的 Worker 地址：
+生产环境保持 API 地址为空，浏览器会请求 Pages 同源的 `/api/*`。Pages Function 通过 Service Binding 调用 Worker，不会让用户浏览器直接访问 `workers.dev`：
 
 ```env
-VITE_API_BASE=https://liwen-zhilian-api.YOUR_SUBDOMAIN.workers.dev
+VITE_API_BASE=
 ```
 
 然后构建：
@@ -87,7 +87,7 @@ npm install
 npm run build
 ```
 
-把 `frontend/dist` 部署到 Cloudflare Pages。
+在 `frontend` 目录运行 `wrangler pages deploy`。`frontend/wrangler.jsonc` 会把 `API` Service Binding 指向 `liwen-zhilian-api`，并连同 `functions/api/[[path]].js` 一起部署。
 
 ## 注意事项
 
