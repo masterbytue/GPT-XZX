@@ -4,9 +4,9 @@
 
 ## 当前线上地址
 
-- 前端 Pages: https://gpt-xzx.pages.dev
-- Worker API: https://chat-app-api.xia13793816032.workers.dev
-- D1 数据库: `chat_app`
+- 前端 Pages: https://liwen-zhilian.pages.dev
+- Worker API: https://liwen-zhilian-api.946883902.workers.dev
+- D1 数据库: `liwen_zhilian`
 
 ## 1. 创建 D1 数据库
 
@@ -14,7 +14,7 @@
 cd worker
 npm install
 npx wrangler login
-npx wrangler d1 create chat_app
+npx wrangler d1 create liwen_zhilian
 ```
 
 把命令输出里的 `database_id` 填到 `worker/wrangler.toml`：
@@ -22,7 +22,7 @@ npx wrangler d1 create chat_app
 ```toml
 [[d1_databases]]
 binding = "DB"
-database_name = "chat_app"
+database_name = "liwen_zhilian"
 database_id = "你的 database_id"
 ```
 
@@ -60,7 +60,7 @@ npm run deploy
 部署后会得到类似：
 
 ```text
-https://chat-app-api.YOUR_SUBDOMAIN.workers.dev
+https://liwen-zhilian-api.YOUR_SUBDOMAIN.workers.dev
 ```
 
 ## 5. 配置前端 API 地址
@@ -75,7 +75,7 @@ copy .env.production.example .env.production
 把里面的地址改成你的 Worker 地址：
 
 ```env
-VITE_API_BASE=https://chat-app-api.YOUR_SUBDOMAIN.workers.dev
+VITE_API_BASE=https://liwen-zhilian-api.YOUR_SUBDOMAIN.workers.dev
 ```
 
 然后构建：
