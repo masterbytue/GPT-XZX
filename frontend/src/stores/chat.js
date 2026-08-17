@@ -65,12 +65,46 @@ export const useChatStore = defineStore('chat', {
       activeRequest = requestController;
       let pendingText = '';
       let frameId = null;
-      const flushPendingText = () => {
-        if (pendingText) {
-          assistant.content += pendingText;
-          pendingText = '';
+      let resolveDrain = null;
+
+      const finishDrain = () => {
+        if (!pendingText && resolveDrain) {
+          resolveDrain();
+          resolveDrain = null;
         }
+      };
+      const flushPendingText = () => {
         frameId = null;
+        if (!pendingText) {
+          finishDrain();
+          return;
+        }
+
+        // Relays often batch many tokens into one network packet. Reveal a small,
+        // adaptive slice per frame so the response still feels genuinely live.
+        const chunkSize = pendingText.length > 1200 ? 8
+          : pendingText.length > 600 ? 6
+            : pendingText.length > 240 ? 4
+              : pendingText.length > 80 ? 2 : 1;
+        assistant.content += pendingText.slice(0, chunkSize);
+        pendingText = pendingText.slice(chunkSize);
+
+        if (pendingText) frameId = window.requestAnimationFrame(flushPendingText);
+        else finishDrain();
+      };
+      const scheduleFlush = () => {
+        if (frameId === null) frameId = window.requestAnimationFrame(flushPendingText);
+      };
+      const waitForDrain = () => {
+        if (!pendingText && frameId === null) return Promise.resolve();
+        return new Promise((resolve) => { resolveDrain = resolve; });
+      };
+      const flushAll = () => {
+        if (frameId !== null) window.cancelAnimationFrame(frameId);
+        frameId = null;
+        if (pendingText) assistant.content += pendingText;
+        pendingText = '';
+        finishDrain();
       };
       try {
         await streamChat({
@@ -80,18 +114,20 @@ export const useChatStore = defineStore('chat', {
           signal: requestController.signal,
         }, (delta) => {
           pendingText += delta;
-          if (frameId === null) frameId = window.requestAnimationFrame(flushPendingText);
+          scheduleFlush();
         });
-        if (frameId !== null) window.cancelAnimationFrame(frameId);
-        flushPendingText();
+        await waitForDrain();
         // Refresh conversation list so the auto-generated title shows up.
         await this.loadConversations();
       } catch (e) {
-        if (frameId !== null) window.cancelAnimationFrame(frameId);
-        flushPendingText();
         if (e.name === 'AbortError') {
+          if (frameId !== null) window.cancelAnimationFrame(frameId);
+          frameId = null;
+          pendingText = '';
+          finishDrain();
           if (!assistant.content) assistant.content = '_已停止生成_';
         } else {
+          flushAll();
           this.error = e.message || 'Something went wrong';
           assistant.content += `\n\n_[error: ${this.error}]_`;
         }
