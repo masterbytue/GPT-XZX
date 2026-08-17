@@ -194,6 +194,8 @@ async function streamChat(request, env, user, ctx) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Accept: 'text/event-stream',
+          'User-Agent': 'OpenAI/NodeJS',
           Authorization: `Bearer ${env.RELAY_API_KEY}`,
         },
         body: JSON.stringify({ model: activeModel, stream: true, messages }),
