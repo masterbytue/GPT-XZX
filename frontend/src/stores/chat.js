@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia';
-import { apiGet, apiPost, apiDelete, streamChat } from '../api';
+import { apiGet, apiPost, apiPatch, apiDelete, streamChat } from '../api';
+
+let activeRequest = null;
 
 export const useChatStore = defineStore('chat', {
   state: () => ({
@@ -8,6 +10,7 @@ export const useChatStore = defineStore('chat', {
     messages: [],
     streaming: false,
     error: '',
+    selectedModel: localStorage.getItem('selectedModel') || 'gpt-5.4-mini',
   }),
   actions: {
     async loadConversations() {
@@ -32,6 +35,22 @@ export const useChatStore = defineStore('chat', {
         this.messages = [];
       }
     },
+    async renameConversation(id, title) {
+      const cleanTitle = title.trim().slice(0, 80);
+      if (!cleanTitle) return;
+      await apiPatch(`/conversations/${id}`, { title: cleanTitle });
+      const conversation = this.conversations.find((item) => item.id === id);
+      if (conversation) conversation.title = cleanTitle;
+    },
+    setModel(model) {
+      this.selectedModel = model;
+      localStorage.setItem('selectedModel', model);
+    },
+    stop() {
+      activeRequest?.abort();
+      activeRequest = null;
+      this.streaming = false;
+    },
     async send(content) {
       this.error = '';
       if (!this.activeId) {
@@ -42,16 +61,28 @@ export const useChatStore = defineStore('chat', {
       const assistant = { id: `tmp-a-${Date.now()}`, role: 'assistant', content: '' };
       this.messages.push(assistant);
       this.streaming = true;
+      const requestController = new AbortController();
+      activeRequest = requestController;
       try {
-        await streamChat({ conversationId: this.activeId, content }, (delta) => {
+        await streamChat({
+          conversationId: this.activeId,
+          content,
+          model: this.selectedModel,
+          signal: requestController.signal,
+        }, (delta) => {
           assistant.content += delta;
         });
         // Refresh conversation list so the auto-generated title shows up.
         await this.loadConversations();
       } catch (e) {
-        this.error = e.message || 'Something went wrong';
-        assistant.content += `\n\n_[error: ${this.error}]_`;
+        if (e.name === 'AbortError') {
+          if (!assistant.content) assistant.content = '_已停止生成_';
+        } else {
+          this.error = e.message || 'Something went wrong';
+          assistant.content += `\n\n_[error: ${this.error}]_`;
+        }
       } finally {
+        if (activeRequest === requestController) activeRequest = null;
         this.streaming = false;
       }
     },

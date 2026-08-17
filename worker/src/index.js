@@ -197,6 +197,7 @@ async function streamChat(request, env, user, ctx) {
           Authorization: `Bearer ${env.RELAY_API_KEY}`,
         },
         body: JSON.stringify({ model: activeModel, stream: true, messages }),
+        signal: request.signal,
       });
 
       if (!upstream.ok || !upstream.body) {
@@ -245,9 +246,11 @@ async function streamChat(request, env, user, ctx) {
           .bind(conversationId, 'assistant', full)
           .run();
       }
-      await send({ type: 'error', error: err.message || 'stream failed' });
+      if (err.name !== 'AbortError') {
+        await send({ type: 'error', error: err.message || 'stream failed' }).catch(() => {});
+      }
     } finally {
-      await writer.close();
+      await writer.close().catch(() => {});
     }
   })());
 

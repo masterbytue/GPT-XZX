@@ -66,7 +66,7 @@ export async function uploadFile(file) {
 }
 
 // Streams the chat response. Calls onDelta(text) for each token chunk.
-export async function streamChat({ conversationId, content }, onDelta) {
+export async function streamChat({ conversationId, content, model, signal }, onDelta) {
   const auth = useAuthStore();
   const res = await fetch(apiUrl('/chat'), {
     method: 'POST',
@@ -74,7 +74,8 @@ export async function streamChat({ conversationId, content }, onDelta) {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${auth.token}`,
     },
-    body: JSON.stringify({ conversationId, content }),
+    body: JSON.stringify({ conversationId, content, model }),
+    signal,
   });
   if (!res.ok || !res.body) {
     throw new Error((await res.json().catch(() => ({}))).error || 'stream failed');

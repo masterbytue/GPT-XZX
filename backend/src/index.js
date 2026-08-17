@@ -172,6 +172,10 @@ app.post('/api/chat', authRequired, async (req, res) => {
   res.flushHeaders?.();
 
   const send = (obj) => res.write(`data: ${JSON.stringify(obj)}\n\n`);
+  const upstreamController = new AbortController();
+  res.once('close', () => {
+    if (!res.writableEnded) upstreamController.abort();
+  });
 
   let full = '';
   try {
@@ -186,6 +190,7 @@ app.post('/api/chat', authRequired, async (req, res) => {
         stream: true,
         messages: messagesWithSystem,
       }),
+      signal: upstreamController.signal,
     });
 
     if (!upstream.ok || !upstream.body) {
@@ -231,14 +236,16 @@ app.post('/api/chat', authRequired, async (req, res) => {
     send({ type: 'done', messageId: info.lastInsertRowid });
     res.end();
   } catch (err) {
-    console.error('chat error', err);
+    if (err.name !== 'AbortError') console.error('chat error', err);
     // Save whatever we streamed so it isn't lost.
     if (full) {
       db.prepare('INSERT INTO messages (conversation_id, role, content) VALUES (?, ?, ?)')
         .run(conversationId, 'assistant', full);
     }
-    send({ type: 'error', error: err.message || 'stream failed' });
-    res.end();
+    if (!res.destroyed) {
+      send({ type: 'error', error: err.message || 'stream failed' });
+      res.end();
+    }
   }
 });
 
