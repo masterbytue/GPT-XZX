@@ -65,7 +65,7 @@ npm run dev
 
 ```
 Backend listening on http://localhost:8787
-Relay: https://plan.makeup/v1  Model: gpt-5.6-sol
+Relay: https://ai.suv.run/v1  Model: gpt-5.6-sol
 ```
 
 ### 终端 2 —— 前端（新开一个窗口）

@@ -217,6 +217,11 @@ app.post('/api/chat', authRequired, async (req, res) => {
         if (data === '[DONE]') continue;
         try {
           const json = JSON.parse(data);
+          if (json.error) {
+            const upstreamMessage = typeof json.error === 'string' ? json.error : json.error.message;
+            send({ type: 'error', error: upstreamMessage || '上游模型服务返回错误' });
+            return res.end();
+          }
           const delta = json.choices?.[0]?.delta?.content;
           if (delta) {
             full += delta;
@@ -226,6 +231,11 @@ app.post('/api/chat', authRequired, async (req, res) => {
           // ignore keep-alive or partial lines
         }
       }
+    }
+
+    if (!full.trim()) {
+      send({ type: 'error', error: '上游模型服务未返回内容，请稍后重试' });
+      return res.end();
     }
 
     // Persist the assistant's full reply.

@@ -224,6 +224,11 @@ async function streamChat(request, env, user, ctx) {
           if (!data || data === '[DONE]') continue;
           try {
             const evt = JSON.parse(data);
+            if (evt.error) {
+              const upstreamMessage = typeof evt.error === 'string' ? evt.error : evt.error.message;
+              await send({ type: 'error', error: upstreamMessage || '上游模型服务返回错误' });
+              return;
+            }
             const delta = evt.choices?.[0]?.delta?.content;
             if (delta) {
               full += delta;
@@ -233,6 +238,11 @@ async function streamChat(request, env, user, ctx) {
             // Ignore upstream keep-alives and partial chunks.
           }
         }
+      }
+
+      if (!full.trim()) {
+        await send({ type: 'error', error: '上游模型服务未返回内容，请稍后重试' });
+        return;
       }
 
       const result = await env.DB.prepare('INSERT INTO messages (conversation_id, role, content) VALUES (?, ?, ?)')
