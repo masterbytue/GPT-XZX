@@ -58,7 +58,7 @@ svg { display: block; width: 1em; height: 1em; }
 }
 .login-brand, .login-statement, .login-credit { position: relative; z-index: 1; }
 .login-brand { display: flex; align-items: center; gap: 11px; font-size: 17px; font-weight: 700; letter-spacing: -.02em; }
-.login-brand .brand-mark { background: #f7f7f1; color: #1e2a25; }
+.login-brand .brand-mark { filter: drop-shadow(0 2px 5px rgba(0, 0, 0, .18)); }
 .login-statement { max-width: 620px; margin: auto 0; padding: 80px 0; }
 .login-statement p { margin: 0 0 18px; color: #d7ff74; font-size: 12px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
 .login-statement h2 { margin: 0; font-family: Georgia, "Songti SC", serif; font-size: clamp(42px, 5vw, 74px); font-weight: 400; line-height: 1.05; letter-spacing: -.045em; }
@@ -190,12 +190,10 @@ svg { display: block; width: 1em; height: 1em; }
 .brand-mark, .welcome-mark {
   display: grid;
   place-items: center;
-  color: #f5f7f2;
-  background: #1e2a25;
+  background: transparent;
 }
-.brand-mark { width: 31px; height: 31px; flex: 0 0 31px; border-radius: 10px; }
-.brand-mark svg { width: 17px; height: 17px; }
-.is-dark .brand-mark { background: var(--accent-soft); color: #1a211d; }
+.brand-mark { width: 34px; height: 34px; flex: 0 0 34px; }
+.brand-mark img, .welcome-mark img { width: 100%; height: 100%; display: block; object-fit: contain; }
 .sidebar-actions { padding: 6px 10px 8px; }
 .sidebar-actions > button, .search-box {
   width: 100%;
@@ -260,8 +258,7 @@ svg { display: block; width: 1em; height: 1em; }
 
 .welcome { min-height: 100%; display: grid; place-items: center; padding: 48px 24px 30px; }
 .welcome-inner { width: min(100%, 780px); text-align: center; animation: welcome-in .46s ease both; }
-.welcome-mark { width: 52px; height: 52px; margin: 0 auto 21px; border-radius: 17px; box-shadow: 0 10px 30px rgba(30,42,37,.16); }
-.welcome-mark svg { width: 27px; height: 27px; }
+.welcome-mark { width: 68px; height: 68px; margin: 0 auto 19px; filter: drop-shadow(0 8px 18px rgba(0, 94, 210, .18)); }
 .eyebrow { margin: 0 0 10px; color: #6e8d29; font-size: 11px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
 .is-dark .eyebrow { color: var(--accent-soft); }
 .welcome h1 { margin: 0; font-family: Georgia, "Songti SC", serif; color: var(--ink); font-size: clamp(30px, 4vw, 44px); font-weight: 400; line-height: 1.15; letter-spacing: -.04em; }
@@ -385,12 +382,12 @@ svg { display: block; width: 1em; height: 1em; }
   .login-panel { display: none; }
   .login-form-side { min-height: 100%; padding: 28px 22px; }
   .login-card .mobile-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 72px; color: #1e2a25; font-size: 15px; font-weight: 700; }
-  .login-card .mobile-brand .brand-mark { color: #fff; background: #1e2a25; }
+  .login-card .mobile-brand .brand-mark { filter: none; }
   .login-card h1 { font-size: 28px; }
   .prompt-grid { grid-template-columns: 1fr; gap: 8px; }
   .prompt-grid button { min-height: 68px; }
   .prompt-grid button:nth-child(n+4) { display: none; }
-  .welcome-mark { width: 46px; height: 46px; border-radius: 15px; }
+  .welcome-mark { width: 58px; height: 58px; }
   .welcome h1 { font-size: 29px; }
   .welcome-copy { font-size: 13px; }
   .message-content { font-size: 14.5px; }

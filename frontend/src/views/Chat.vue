@@ -5,7 +5,7 @@
     <aside class="sidebar" :class="{ open: sidebarOpen }">
       <div class="sidebar-topbar">
         <button class="brand-button" type="button" aria-label="砺文智联首页" @click="startNew">
-          <span class="brand-mark"><AppIcon name="spark" /></span><span>砺文智联</span>
+          <span class="brand-mark"><img src="/liwen-mark.png" alt="" /></span><span>砺文智联</span>
         </button>
         <button class="icon-button sidebar-toggle" type="button" title="收起侧边栏" @click="sidebarOpen = false"><AppIcon name="panel" /></button>
       </div>
@@ -65,7 +65,7 @@
       <div ref="scrollEl" class="messages" @scroll="handleScroll" @click="handleMessageClick">
         <section v-if="chat.messages.length === 0" class="welcome">
           <div class="welcome-inner">
-            <div class="welcome-mark"><AppIcon name="spark" /></div>
+            <div class="welcome-mark"><img src="/liwen-mark.png" alt="砺文智联" /></div>
             <p class="eyebrow">你的智能工作台</p>
             <h1>{{ greeting }}，{{ userName }}</h1>
             <p class="welcome-copy">把问题、想法或文件交给我，我们一起把它变成清晰的答案。</p>
