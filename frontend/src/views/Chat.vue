@@ -86,7 +86,6 @@
             :class="[message.role, { 'streaming-message': chat.streaming && message.role === 'assistant' && index === chat.messages.length - 1 }]"
           >
             <div class="message-inner">
-              <div v-if="message.role === 'assistant'" class="assistant-mark"><AppIcon name="spark" /></div>
               <div class="message-stack" :class="message.role">
                 <div
                   class="message-content"
